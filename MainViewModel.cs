@@ -89,4 +89,9 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         var _ = App.UpdateRepositoryStatus(SelectedRepository);
     }
+
+    public void Exit()
+    {
+        App.Shutdown();
+    }
 }

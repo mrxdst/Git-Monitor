@@ -48,6 +48,8 @@ public partial class MainWindow : Window
 
     private void RemoveClick(object sender, RoutedEventArgs e) => VM.Remove();
 
+    private void ExitClick(object sender, RoutedEventArgs e) => VM.Exit();
+
     private void Window_Drop(object sender, DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -64,10 +66,5 @@ public partial class MainWindow : Window
     {
         e.Cancel = true;
         Hide();
-    }
-
-    private void ListViewItem_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-    {
-
     }
 }

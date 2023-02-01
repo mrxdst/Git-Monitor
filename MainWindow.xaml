@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance {x:Type local:MainViewModel}, IsDesignTimeCreatable=False}"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="Git-Monitor" Height="600" Width="450"
+        Title="Git-Monitor" Height="400" Width="550"
         Drop="Window_Drop" AllowDrop="True"
         Closing="Window_Closing">
     <Window.Resources>
@@ -26,12 +26,14 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ui:CommandBar>
+            <ui:AppBarButton Icon="Download" Label="Fetch" IsEnabled="{Binding HasSelection}" Click="FetchClick"/>
+            <ui:AppBarButton Icon="List" Label="Log" IsEnabled="{Binding HasSelection}" Click="LogClick"/>
+            <ui:AppBarButton Icon="Folder" Label="Open" IsEnabled="{Binding HasSelection}" Click="OpenClick"/>
+            <ui:AppBarSeparator/>
             <ui:AppBarButton Icon="Add" Label="Add" Click="AddClick"/>
             <ui:AppBarButton Icon="Remove" Label="Remove" IsEnabled="{Binding HasSelection}" Click="RemoveClick"/>
             <ui:AppBarSeparator/>
-            <ui:AppBarButton Icon="Download" Label="Fetch" IsEnabled="{Binding HasSelection}" Click="FetchClick"/>
-            <ui:AppBarButton Icon="Folder" Label="Open" IsEnabled="{Binding HasSelection}" Click="OpenClick"/>
-            <ui:AppBarButton Icon="List" Label="Log" IsEnabled="{Binding HasSelection}" Click="LogClick"/>
+            <ui:AppBarButton Icon="Cancel" Label="Exit" Click="ExitClick"/>
         </ui:CommandBar>
         <ListView x:Name="RepoListElm" Grid.Row="1"
                   ItemsSource="{Binding Source={StaticResource SortedRepositories}}"

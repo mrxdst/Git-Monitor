@@ -41,7 +41,6 @@ public partial class App : Application
             ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip()
         };
 
-        Tray.ContextMenuStrip.Items.Add("Exit", null, (s, e) => Shutdown());
         Tray.DoubleClick += (s, e) => ShowWindow();
         Tray.BalloonTipClicked += (s, e) => ShowWindow();
 
