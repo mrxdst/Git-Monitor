@@ -1,0 +1,63 @@
+﻿<Window x:Class="Git_Monitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        xmlns:local="clr-namespace:Git_Monitor"
+        xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance {x:Type local:MainViewModel}, IsDesignTimeCreatable=False}"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        Title="Git-Monitor" Height="600" Width="450"
+        Drop="Window_Drop" AllowDrop="True"
+        Closing="Window_Closing">
+    <Window.Resources>
+        <CollectionViewSource x:Key="SortedRepositories" Source="{Binding Repositories}" Culture="{x:Static glob:CultureInfo.CurrentCulture}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Path"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ui:CommandBar>
+            <ui:AppBarButton Icon="Add" Label="Add" Click="AddClick"/>
+            <ui:AppBarButton Icon="Remove" Label="Remove" IsEnabled="{Binding HasSelection}" Click="RemoveClick"/>
+            <ui:AppBarSeparator/>
+            <ui:AppBarButton Icon="Download" Label="Fetch" IsEnabled="{Binding HasSelection}" Click="FetchClick"/>
+            <ui:AppBarButton Icon="Folder" Label="Open" IsEnabled="{Binding HasSelection}" Click="OpenClick"/>
+            <ui:AppBarButton Icon="List" Label="Log" IsEnabled="{Binding HasSelection}" Click="LogClick"/>
+        </ui:CommandBar>
+        <ListView x:Name="RepoListElm" Grid.Row="1"
+                  ItemsSource="{Binding Source={StaticResource SortedRepositories}}"
+                  HorizontalContentAlignment="Stretch"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  SelectionMode="Single" SelectedItem="{Binding SelectedRepository, Mode=OneWayToSource}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource DefaultListViewItemStyle}">
+                    <Setter Property="ToolTip" Value="{Binding ErrorText}"/>
+                    <EventSetter Event="MouseDoubleClick" Handler="LogClick"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="2" Text="{Binding StatusText}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Window>
