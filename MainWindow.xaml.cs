@@ -26,7 +26,11 @@ public partial class MainWindow : Window
         DataContext = VM = vm;
     }
 
+    private void PullClick(object sender, RoutedEventArgs e) => VM.Pull();
+
     private void FetchClick(object sender, RoutedEventArgs e) => VM.Fetch();
+
+    private void PushClick(object sender, RoutedEventArgs e) => VM.Push();
 
     private void OpenClick(object sender, RoutedEventArgs e) => VM.OpenFolder();
 

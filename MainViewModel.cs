@@ -83,11 +83,33 @@ public class MainViewModel : INotifyPropertyChanged
         Repositories.Remove(SelectedRepository);
     }
 
+    public void Pull()
+    {
+        if (SelectedRepository == null)
+            return;
+        try
+        {
+            using var _ = Process.Start("TortoiseGitProc.exe", $"/command:pull /path:\"{SelectedRepository.Path}\"");
+        }
+        catch (Exception) { }
+    }
+
     public void Fetch()
     {
         if (SelectedRepository == null)
             return;
         var _ = App.UpdateRepositoryStatus(SelectedRepository);
+    }
+
+    public void Push()
+    {
+        if (SelectedRepository == null)
+            return;
+        try
+        {
+            using var _ = Process.Start("TortoiseGitProc.exe", $"/command:push /path:\"{SelectedRepository.Path}\"");
+        }
+        catch (Exception) { }
     }
 
     public void Exit()

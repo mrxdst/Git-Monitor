@@ -103,12 +103,12 @@ public partial class App : Application
 
         if (Repositories.All(r => !r.UpdateNeeded))
         {
-            Win.Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/icon-ok.png"));
+            Win.Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_ok.png"));
             Tray.Icon = Git_Monitor.Resources.icon_ok;
         }
         else
         {
-            Win.Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/icon-bad.png"));
+            Win.Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_bad.png"));
             Tray.Icon = Git_Monitor.Resources.icon_bad;
         }
     }

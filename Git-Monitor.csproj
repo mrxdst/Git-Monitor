@@ -6,12 +6,12 @@
     <RootNamespace>Git_Monitor</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <ApplicationIcon>Assets\icon-ok.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\icon_ok.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\icon-bad.png" />
-    <None Remove="Assets\icon-ok.png" />
+    <None Remove="Assets\icon_bad.png" />
+    <None Remove="Assets\icon_ok.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,8 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\icon-bad.png" />
-    <Resource Include="Assets\icon-ok.png" />
+    <Resource Include="Assets\icon_bad.png" />
+    <Resource Include="Assets\icon_ok.png" />
   </ItemGroup>
 
   <ItemGroup>

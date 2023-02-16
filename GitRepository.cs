@@ -20,16 +20,16 @@ public class GitRepository : INotifyPropertyChanged
     public string? ErrorText { get; private set; }
 
     public bool Error => !string.IsNullOrEmpty(ErrorText);
-    public bool UpdateNeeded => CommitsAhead + CommitsBehind > 0;
+    public bool UpdateNeeded => !Error && (CommitsAhead + CommitsBehind > 0);
     public bool IsUpdatingStatus => UpdateTask != null;
     public string StatusText
     {
         get
         {
-            if (Error)
-                return "Error";
             if (IsUpdatingStatus)
                 return "Fetching";
+            if (Error)
+                return "Error";
             if (!InitialLoaded)
                 return "";
             if (!UpdateNeeded)

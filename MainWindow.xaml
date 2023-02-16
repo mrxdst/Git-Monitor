@@ -26,7 +26,10 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <ui:CommandBar>
-            <ui:AppBarButton Icon="Download" Label="Fetch" IsEnabled="{Binding HasSelection}" Click="FetchClick"/>
+            <ui:AppBarButton Icon="Sync" Label="Fetch" IsEnabled="{Binding HasSelection}" Click="FetchClick"/>
+            <ui:AppBarButton Icon="Download" Label="Pull" IsEnabled="{Binding HasSelection}" Click="PullClick"/>
+            <ui:AppBarButton Icon="Upload" Label="Push" IsEnabled="{Binding HasSelection}" Click="PushClick"/>
+            <ui:AppBarSeparator/>
             <ui:AppBarButton Icon="List" Label="Log" IsEnabled="{Binding HasSelection}" Click="LogClick"/>
             <ui:AppBarButton Icon="Folder" Label="Open" IsEnabled="{Binding HasSelection}" Click="OpenClick"/>
             <ui:AppBarSeparator/>
