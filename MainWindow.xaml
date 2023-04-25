@@ -48,6 +48,7 @@
                 <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource DefaultListViewItemStyle}">
                     <Setter Property="ToolTip" Value="{Binding ErrorText}"/>
                     <EventSetter Event="MouseDoubleClick" Handler="LogClick"/>
+                    <EventSetter Event="KeyDown" Handler="LogKeyDown"/>
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>

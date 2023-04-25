@@ -36,6 +36,16 @@ public partial class MainWindow : Window
 
     private void LogClick(object sender, RoutedEventArgs e) => VM.OpenLog();
 
+    private void LogKeyDown(object sender, KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Delete:
+                VM.Remove();
+                break;
+        }
+    }
+
     private void AddClick(object sender, RoutedEventArgs e)
     {
         var dlg = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog() { Multiselect = true };
