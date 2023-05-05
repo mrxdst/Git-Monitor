@@ -22,12 +22,15 @@ public class GitRepository : INotifyPropertyChanged
     public bool Error => !string.IsNullOrEmpty(ErrorText);
     public bool UpdateNeeded => !Error && (CommitsAhead + CommitsBehind > 0);
     public bool IsUpdatingStatus => UpdateTask != null;
+    public bool IsFetching { get; private set; }
     public string StatusText
     {
         get
         {
-            if (IsUpdatingStatus)
+            if (IsFetching)
                 return "Fetching";
+            if (IsUpdatingStatus)
+                return "Updating";
             if (Error)
                 return "Error";
             if (!InitialLoaded)
@@ -48,7 +51,7 @@ public class GitRepository : INotifyPropertyChanged
         Path = path;
     }
 
-    public async Task UpdateStatus()
+    public async Task UpdateStatus(bool fetch)
     {
         if (UpdateTask != null)
         {
@@ -58,15 +61,19 @@ public class GitRepository : INotifyPropertyChanged
 
         UpdateTask = Task.Run(async () =>
         {
+            IsFetching = fetch;
             ReportStatusChange();
 
             try
             {
-                var (fetchErr, _) = await RunCommand("git", "fetch --all --quiet");
-                if (!string.IsNullOrEmpty(fetchErr))
+                if (fetch)
                 {
-                    ErrorText = fetchErr;
-                    return;
+                    var (fetchErr, _) = await RunCommand("git", "fetch --all --quiet");
+                    if (!string.IsNullOrEmpty(fetchErr))
+                    {
+                        ErrorText = fetchErr;
+                        return;
+                    }
                 }
 
                 var (behindErr, behindOut) = await RunCommand("git", "rev-list --count HEAD..@{u}");
@@ -94,6 +101,7 @@ public class GitRepository : INotifyPropertyChanged
             finally
             {
                 InitialLoaded = true;
+                IsFetching = false;
             }
         });
 
@@ -110,6 +118,7 @@ public class GitRepository : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Error)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateNeeded)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUpdatingStatus)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFetching)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusText)));
     }
 

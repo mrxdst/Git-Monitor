@@ -73,7 +73,7 @@ public partial class App : Application
             for (int i = 0; i < Repositories.Count; i++)
             {
                 var repo = Repositories[i];
-                await UpdateRepositoryStatus(repo);
+                await UpdateRepositoryStatus(repo, true);
             }
 
             var delta = UPDATE_INTERVAL - (DateTimeOffset.Now - start);
@@ -84,10 +84,10 @@ public partial class App : Application
         }
     }
 
-    public async Task UpdateRepositoryStatus(GitRepository repository)
+    public async Task UpdateRepositoryStatus(GitRepository repository, bool fetch)
     {
         var _updateNeeded = repository.UpdateNeeded;
-        await repository.UpdateStatus();
+        await repository.UpdateStatus(fetch);
         if (TokenSource.IsCancellationRequested)
         {
             return;
@@ -116,7 +116,7 @@ public partial class App : Application
     private void Load()
     {
         var repoPaths = JsonSerializer.Deserialize<List<string>>(Settings.Default.RepositoryPaths)!;
-        repoPaths.Sort();
+        repoPaths.Sort(StringComparer.CurrentCulture);
 
         foreach (var path in repoPaths)
         {

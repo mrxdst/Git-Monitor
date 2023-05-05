@@ -3,23 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:local="clr-namespace:Git_Monitor"
-        xmlns:glob="clr-namespace:System.Globalization;assembly=mscorlib"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance {x:Type local:MainViewModel}, IsDesignTimeCreatable=False}"
         ui:WindowHelper.UseModernWindowStyle="True"
-        Title="Git-Monitor" Height="400" Width="550"
+        Title="Git-Monitor" Height="640" Width="480"
         Drop="Window_Drop" AllowDrop="True"
         Closing="Window_Closing">
-    <Window.Resources>
-        <CollectionViewSource x:Key="SortedRepositories" Source="{Binding Repositories}" Culture="{x:Static glob:CultureInfo.CurrentCulture}">
-            <CollectionViewSource.SortDescriptions>
-                <scm:SortDescription PropertyName="Path"/>
-            </CollectionViewSource.SortDescriptions>
-        </CollectionViewSource>
-    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -39,16 +30,93 @@
             <ui:AppBarButton Icon="Cancel" Label="Exit" Click="ExitClick"/>
         </ui:CommandBar>
         <ListView x:Name="RepoListElm" Grid.Row="1"
-                  ItemsSource="{Binding Source={StaticResource SortedRepositories}}"
+                  ItemsSource="{Binding Repositories}"
                   HorizontalContentAlignment="Stretch"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
                   SelectionMode="Single" SelectedItem="{Binding SelectedRepository, Mode=OneWayToSource}">
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Add" Click="AddClick">
+                        <MenuItem.Icon>
+                            <ui:SymbolIcon Symbol="Add"/>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.ItemContainerStyle>
                 <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource DefaultListViewItemStyle}">
                     <Setter Property="ToolTip" Value="{Binding ErrorText}"/>
                     <EventSetter Event="MouseDoubleClick" Handler="LogClick"/>
-                    <EventSetter Event="KeyDown" Handler="LogKeyDown"/>
+                    <EventSetter Event="KeyDown" Handler="ItemKeyDown"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <MenuItem Header="Fetch">
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                                            <EventSetter Event="Click" Handler="FetchClick"/>
+                                        </Style>
+                                    </MenuItem.Style>
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Sync"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Pull">
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                                            <EventSetter Event="Click" Handler="PullClick"/>
+                                        </Style>
+                                    </MenuItem.Style>
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Download"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Push">
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                                            <EventSetter Event="Click" Handler="PushClick"/>
+                                        </Style>
+                                    </MenuItem.Style>
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Upload"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="Log">
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                                            <EventSetter Event="Click" Handler="LogClick"/>
+                                        </Style>
+                                    </MenuItem.Style>
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="List"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Open">
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                                            <EventSetter Event="Click" Handler="OpenClick"/>
+                                        </Style>
+                                    </MenuItem.Style>
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Folder"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="Remove">
+                                    <MenuItem.Style>
+                                        <Style TargetType="MenuItem" BasedOn="{StaticResource DefaultMenuItemStyle}">
+                                            <EventSetter Event="Click" Handler="RemoveClick"/>
+                                        </Style>
+                                    </MenuItem.Style>
+                                    <MenuItem.Icon>
+                                        <ui:SymbolIcon Symbol="Remove"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>

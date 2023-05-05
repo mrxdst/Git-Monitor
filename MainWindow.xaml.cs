@@ -36,12 +36,15 @@ public partial class MainWindow : Window
 
     private void LogClick(object sender, RoutedEventArgs e) => VM.OpenLog();
 
-    private void LogKeyDown(object sender, KeyEventArgs e)
+    private void ItemKeyDown(object sender, KeyEventArgs e)
     {
         switch (e.Key)
         {
             case Key.Delete:
                 VM.Remove();
+                break;
+            case Key.Enter:
+                VM.OpenLog();
                 break;
         }
     }

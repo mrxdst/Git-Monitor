@@ -55,25 +55,36 @@ public class MainViewModel : INotifyPropertyChanged
         catch (Exception) { }
     }
 
-    public void OpenLog()
+    public async void OpenLog()
     {
-        if (SelectedRepository == null)
+        var repo = SelectedRepository;
+        if (repo == null)
             return;
         try
         {
-            using var _ = Process.Start("TortoiseGitProc.exe", $"/command:log /path:\"{SelectedRepository.Path}\"");
+            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:log /path:\"{repo.Path}\"");
+            ps.EnableRaisingEvents = true;
+            await ps.WaitForExitAsync();
         }
         catch (Exception) { }
+        await App.UpdateRepositoryStatus(repo, false);
     }
 
     public void Add(string path)
     {
-        var existing = Repositories.Select(s => s.Path).ToHashSet();
-        if (existing.Contains(path))
+        if (Repositories.Any(r => r.Path == path))
             return;
         var repo = new GitRepository(path);
-        var _ = App.UpdateRepositoryStatus(repo);
-        Repositories.Add(repo);
+        var _ = App.UpdateRepositoryStatus(repo, true);
+        int i = 0;
+        for (; i < Repositories.Count; i++)
+        {
+            if (StringComparer.CurrentCulture.Compare(Repositories[i].Path, repo.Path) > 0)
+            {
+                break;
+            }
+        }
+        Repositories.Insert(i, repo);
     }
 
     public void Remove()
@@ -83,33 +94,41 @@ public class MainViewModel : INotifyPropertyChanged
         Repositories.Remove(SelectedRepository);
     }
 
-    public void Pull()
+    public async void Pull()
     {
-        if (SelectedRepository == null)
+        var repo = SelectedRepository;
+        if (repo == null)
             return;
         try
         {
-            using var _ = Process.Start("TortoiseGitProc.exe", $"/command:pull /path:\"{SelectedRepository.Path}\"");
+            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:pull /path:\"{repo.Path}\"");
+            ps.EnableRaisingEvents = true;
+            await ps.WaitForExitAsync();
         }
         catch (Exception) { }
+        await App.UpdateRepositoryStatus(repo, false);
     }
 
     public void Fetch()
     {
         if (SelectedRepository == null)
             return;
-        var _ = App.UpdateRepositoryStatus(SelectedRepository);
+        var _ = App.UpdateRepositoryStatus(SelectedRepository, true);
     }
 
-    public void Push()
+    public async void Push()
     {
-        if (SelectedRepository == null)
+        var repo = SelectedRepository;
+        if (repo == null)
             return;
         try
         {
-            using var _ = Process.Start("TortoiseGitProc.exe", $"/command:push /path:\"{SelectedRepository.Path}\"");
+            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:push /path:\"{repo.Path}\"");
+            ps.EnableRaisingEvents = true;
+            await ps.WaitForExitAsync();
         }
         catch (Exception) { }
+        await App.UpdateRepositoryStatus(repo, false);
     }
 
     public void Exit()
