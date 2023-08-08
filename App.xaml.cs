@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Uwp.Notifications;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
@@ -30,8 +31,9 @@ public partial class App : Application
         base.OnStartup(e);
         Load();
         Repositories.CollectionChanged += Repositories_CollectionChanged;
-        
-        ShowWindow();
+
+        Win = new MainWindow(new MainViewModel(this));
+        Win.Show();
 
         Tray = new System.Windows.Forms.NotifyIcon()
         {
@@ -41,22 +43,46 @@ public partial class App : Application
             ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip()
         };
 
-        Tray.DoubleClick += (s, e) => ShowWindow();
-        Tray.BalloonTipClicked += (s, e) => ShowWindow();
+        Tray.DoubleClick += (s, e) => Win.Show();
+        ToastNotificationManagerCompat.OnActivated += NotificationActivated;
 
         UpdateStatusLoop();
     }
 
-    private void ShowWindow()
+    private void NotificationActivated(ToastNotificationActivatedEventArgsCompat toastArgs)
     {
-        Win ??= new MainWindow(new MainViewModel(this));
-        Win.Show();
+        if (Win == null) return;
+        Application.Current.Dispatcher.Invoke(() => {
+            var args = ToastArguments.Parse(toastArgs.Argument);
+            if (args.TryGetValue("repository", out string repositoryPath))
+            {
+                Win.VM.SelectedRepository = Repositories.FirstOrDefault(r => r.Path == repositoryPath);
+            }
+
+            args.TryGetValue("action", out string action);
+            switch (action)
+            {
+                case "pull":
+                    Win.VM.Pull();
+                    break;
+                case "log":
+                    Win.VM.OpenLog();
+                    break;
+                case "open":
+                    Win.VM.OpenFolder();
+                    break;
+                default:
+                    Win?.Show();
+                    break;
+            }
+         });
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
         base.OnExit(e);
         TokenSource.Cancel();
+        ToastNotificationManagerCompat.Uninstall();
         Save();
     }
 
@@ -98,7 +124,23 @@ public partial class App : Application
         }
         if (!_updateNeeded && repository.UpdateNeeded)
         {
-            Tray.ShowBalloonTip(1, "Update needed", repository.Path, System.Windows.Forms.ToolTipIcon.None);
+            new ToastContentBuilder()
+                .AddArgument("repository", repository.Path)
+                .AddText("Update needed")
+                .AddText(repository.Path)
+                .AddButton(new ToastButton()
+                    .SetContent("Pull")
+                    .AddArgument("action", "pull")
+                )
+                .AddButton(new ToastButton()
+                    .SetContent("Log")
+                    .AddArgument("action", "log")
+                )
+                .AddButton(new ToastButton()
+                    .SetContent("Open")
+                    .AddArgument("action", "open")
+                )
+                .Show();
         }
 
         if (Repositories.All(r => !r.UpdateNeeded))

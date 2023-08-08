@@ -18,7 +18,7 @@ namespace Git_Monitor;
 
 public partial class MainWindow : Window
 {
-    private readonly MainViewModel VM;
+    public readonly MainViewModel VM;
 
     public MainWindow(MainViewModel vm)
     {

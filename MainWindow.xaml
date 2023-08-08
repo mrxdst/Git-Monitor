@@ -34,7 +34,7 @@
                   HorizontalContentAlignment="Stretch"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   ScrollViewer.VerticalScrollBarVisibility="Auto"
-                  SelectionMode="Single" SelectedItem="{Binding SelectedRepository, Mode=OneWayToSource}">
+                  SelectionMode="Single" SelectedItem="{Binding SelectedRepository, Mode=TwoWay}">
             <ListView.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Add" Click="AddClick">
