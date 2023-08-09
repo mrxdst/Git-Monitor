@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Uwp.Notifications;
+﻿using H.NotifyIcon;
+using Microsoft.Toolkit.Uwp.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +33,7 @@ public partial class App : Application
         Repositories.CollectionChanged += Repositories_CollectionChanged;
 
         Win = new MainWindow(new MainViewModel(this));
-        Win.Show();
+        WindowExtensions.Show(Win);
 
         ToastNotificationManagerCompat.OnActivated += NotificationActivated;
 
@@ -62,7 +63,7 @@ public partial class App : Application
                     Win.VM.OpenFolder();
                     break;
                 default:
-                    Win?.Show();
+                    WindowExtensions.Show(Win);
                     break;
             }
          });

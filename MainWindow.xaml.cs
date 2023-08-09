@@ -1,4 +1,5 @@
-﻿using System;
+﻿using H.NotifyIcon;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -82,18 +83,18 @@ public partial class MainWindow : Window
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         e.Cancel = true;
-        Hide();
+        WindowExtensions.Hide(this);
     }
 
     private void TrayDoubleClick(object sender, RoutedEventArgs e)
     {
         if (Visibility == Visibility.Visible)
         {
-            Hide();
+            WindowExtensions.Hide(this);
         }
         else
         {
-            Show();
+            WindowExtensions.Show(this);
         }
     }
 }
