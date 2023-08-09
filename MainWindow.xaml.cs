@@ -84,4 +84,16 @@ public partial class MainWindow : Window
         e.Cancel = true;
         Hide();
     }
+
+    private void TrayDoubleClick(object sender, RoutedEventArgs e)
+    {
+        if (Visibility == Visibility.Visible)
+        {
+            Hide();
+        }
+        else
+        {
+            Show();
+        }
+    }
 }

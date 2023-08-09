@@ -23,7 +23,6 @@ public partial class App : Application
 
     private readonly CancellationTokenSource TokenSource = new ();
 
-    private System.Windows.Forms.NotifyIcon? Tray;
     private MainWindow? Win;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -35,15 +34,6 @@ public partial class App : Application
         Win = new MainWindow(new MainViewModel(this));
         Win.Show();
 
-        Tray = new System.Windows.Forms.NotifyIcon()
-        {
-            Visible = true,
-            Icon = Git_Monitor.Resources.icon_ok,
-            Text = "Git-Monitor",
-            ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip()
-        };
-
-        Tray.DoubleClick += (s, e) => Win.Show();
         ToastNotificationManagerCompat.OnActivated += NotificationActivated;
 
         UpdateStatusLoop();
@@ -114,11 +104,7 @@ public partial class App : Application
     {
         var _updateNeeded = repository.UpdateNeeded;
         await repository.UpdateStatus(fetch);
-        if (TokenSource.IsCancellationRequested)
-        {
-            return;
-        }
-        if (Tray == null || Win == null)
+        if (Win == null || TokenSource.IsCancellationRequested)
         {
             return;
         }
@@ -142,17 +128,7 @@ public partial class App : Application
                 )
                 .Show();
         }
-
-        if (Repositories.All(r => !r.UpdateNeeded))
-        {
-            Win.Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_ok.png"));
-            Tray.Icon = Git_Monitor.Resources.icon_ok;
-        }
-        else
-        {
-            Win.Icon = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_bad.png"));
-            Tray.Icon = Git_Monitor.Resources.icon_bad;
-        }
+        Win.VM.UpdateNeeded = Repositories.Any(r => r.UpdateNeeded);
     }
 
     private void Load()

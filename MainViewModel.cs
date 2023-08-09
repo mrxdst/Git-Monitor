@@ -1,4 +1,5 @@
-﻿using System;
+﻿using H.NotifyIcon;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Git_Monitor;
 
@@ -15,6 +17,9 @@ public class MainViewModel : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private readonly App App;
+
+    private static BitmapImage IconOK = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_ok.ico"));
+    private static BitmapImage IconBad = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_bad.ico"));
 
     public ObservableCollection<GitRepository> Repositories => App.Repositories;
 
@@ -33,6 +38,23 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     public bool HasSelection => SelectedRepository != null;
+
+    private bool _UpdateNeeded = false;
+    public bool UpdateNeeded
+    {
+        get
+        {
+            return _UpdateNeeded;
+        }
+        set
+        {
+            _UpdateNeeded = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateNeeded)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusIcon)));
+        }
+    }
+
+    public BitmapImage StatusIcon => UpdateNeeded  ? IconBad : IconOK;
 
     public MainViewModel(App app)
     {
