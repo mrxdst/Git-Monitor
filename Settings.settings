@@ -5,5 +5,8 @@
     <Setting Name="RepositoryPaths" Type="System.String" Scope="User">
       <Value Profile="(Default)">[]</Value>
     </Setting>
+    <Setting Name="UpdateInterval" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:01:00</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -15,8 +15,6 @@ namespace Git_Monitor;
 
 public partial class App : Application
 {
-    private readonly static TimeSpan UPDATE_INTERVAL = TimeSpan.FromSeconds(60);
-
     public ObservableCollection<GitRepository> Repositories { get; } = new ();
 
     private readonly CancellationTokenSource TokenSource = new ();
@@ -88,7 +86,7 @@ public partial class App : Application
                 Win!.VM.UpdateNeeded = Repositories.Any(r => r.UpdateNeeded);
             }
 
-            var delta = UPDATE_INTERVAL - (DateTimeOffset.Now - start);
+            var delta = Settings.Default.UpdateInterval - (DateTimeOffset.Now - start);
             if (delta > TimeSpan.Zero)
             {
                 await Task.Delay(delta);

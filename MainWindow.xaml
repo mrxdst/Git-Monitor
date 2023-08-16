@@ -46,6 +46,23 @@
                     </MenuItem>
                 </ContextMenu>
             </ListView.ContextMenu>
+            <ListView.Style>
+                <Style TargetType="ListView" BasedOn="{StaticResource DefaultListViewStyle}">
+                    <Style.Triggers>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListView">
+                                        <TextBlock Text="Drag repository folders here to begin monitoring them"
+                                                   Margin="8" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.Style>
             <ListView.ItemContainerStyle>
                 <Style TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource DefaultListViewItemStyle}">
                     <Setter Property="ToolTip" Value="{Binding ErrorText}"/>
