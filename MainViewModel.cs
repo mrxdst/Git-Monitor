@@ -1,5 +1,4 @@
-﻿using H.NotifyIcon;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -18,8 +17,8 @@ public class MainViewModel : INotifyPropertyChanged
 
     private readonly App App;
 
-    private static BitmapImage IconOK = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_ok.ico"));
-    private static BitmapImage IconBad = new BitmapImage(new Uri("pack://application:,,,/Assets/icon_bad.ico"));
+    private readonly static BitmapImage IconOK = new (new Uri("pack://application:,,,/Assets/icon_ok.ico"));
+    private readonly static BitmapImage IconBad = new (new Uri("pack://application:,,,/Assets/icon_bad.ico"));
 
     public ObservableCollection<GitRepository> Repositories => App.Repositories;
 
@@ -61,100 +60,23 @@ public class MainViewModel : INotifyPropertyChanged
         App = app;
     }
 
-    public void OpenFolder()
-    {
-        if (SelectedRepository == null)
-            return;
-        try
-        {
-            using var _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = SelectedRepository.Path + Path.DirectorySeparatorChar,
-                UseShellExecute = true,
-                Verb = "open"
-            });
-        }
-        catch (Exception) { }
-    }
-
-    public async void OpenLog()
-    {
-        var repo = SelectedRepository;
-        if (repo == null)
-            return;
-        try
-        {
-            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:log /path:\"{repo.Path}\"");
-            ps.EnableRaisingEvents = true;
-            await ps.WaitForExitAsync();
-        }
-        catch (Exception) { }
-        await App.UpdateRepositoryStatus(repo, false);
-    }
-
-    public void Add(string path)
-    {
-        if (Repositories.Any(r => r.Path == path))
-            return;
-        var repo = new GitRepository(path);
-        var _ = App.UpdateRepositoryStatus(repo, true);
-        int i = 0;
-        for (; i < Repositories.Count; i++)
-        {
-            if (StringComparer.CurrentCulture.Compare(Repositories[i].Path, repo.Path) > 0)
-            {
-                break;
-            }
-        }
-        Repositories.Insert(i, repo);
-    }
+    public void Add(string path) => App.AddRepository(path);
 
     public void Remove()
     {
-        if (SelectedRepository == null)
-            return;
-        Repositories.Remove(SelectedRepository);
+        if (SelectedRepository == null) return;
+        App.RemoveRepository(SelectedRepository);
     }
 
-    public async void Pull()
-    {
-        var repo = SelectedRepository;
-        if (repo == null)
-            return;
-        try
-        {
-            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:pull /path:\"{repo.Path}\"");
-            ps.EnableRaisingEvents = true;
-            await ps.WaitForExitAsync();
-        }
-        catch (Exception) { }
-        await App.UpdateRepositoryStatus(repo, false);
-    }
+    public void OpenFolder() => SelectedRepository?.OpenFolder();
 
-    public void Fetch()
-    {
-        if (SelectedRepository == null)
-            return;
-        var _ = App.UpdateRepositoryStatus(SelectedRepository, true);
-    }
+    public void OpenLog() => SelectedRepository?.OpenLog();
 
-    public async void Push()
-    {
-        var repo = SelectedRepository;
-        if (repo == null)
-            return;
-        try
-        {
-            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:push /path:\"{repo.Path}\"");
-            ps.EnableRaisingEvents = true;
-            await ps.WaitForExitAsync();
-        }
-        catch (Exception) { }
-        await App.UpdateRepositoryStatus(repo, false);
-    }
+    public void OpenPull() => SelectedRepository?.OpenPull();
 
-    public void Exit()
-    {
-        App.Shutdown();
-    }
+    public void OpenPush() => SelectedRepository?.OpenPush();
+
+    public void Fetch() => SelectedRepository?.UpdateStatus(fetch: true, notify: true);
+
+    public void Exit() => App.Shutdown();
 }

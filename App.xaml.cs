@@ -3,16 +3,13 @@ using Microsoft.Toolkit.Uwp.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
+using System.Collections.Specialized;
 using System.Data;
-using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
 
 namespace Git_Monitor;
 
@@ -30,7 +27,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         Load();
-        Repositories.CollectionChanged += Repositories_CollectionChanged;
+        Repositories.CollectionChanged += (sender, e) => Save();
 
         Win = new MainWindow(new MainViewModel(this));
         WindowExtensions.Show(Win);
@@ -40,46 +37,43 @@ public partial class App : Application
         UpdateStatusLoop();
     }
 
+    protected override void OnExit(ExitEventArgs e)
+    {
+        Save();
+        TokenSource.Cancel();
+        ToastNotificationManagerCompat.Uninstall();
+        base.OnExit(e);
+    }
+
     private void NotificationActivated(ToastNotificationActivatedEventArgsCompat toastArgs)
     {
         if (Win == null) return;
         Application.Current.Dispatcher.Invoke(() => {
             var args = ToastArguments.Parse(toastArgs.Argument);
+            GitRepository? repo = null;
             if (args.TryGetValue("repository", out string repositoryPath))
             {
-                Win.VM.SelectedRepository = Repositories.FirstOrDefault(r => r.Path == repositoryPath);
+                repo = Repositories.FirstOrDefault(r => r.Path == repositoryPath);
             }
+            Win.VM.SelectedRepository = repo;
 
             args.TryGetValue("action", out string action);
             switch (action)
             {
                 case "pull":
-                    Win.VM.Pull();
+                    repo?.OpenPull();
                     break;
                 case "log":
-                    Win.VM.OpenLog();
+                    repo?.OpenLog();
                     break;
                 case "open":
-                    Win.VM.OpenFolder();
+                    repo?.OpenFolder();
                     break;
                 default:
                     WindowExtensions.Show(Win);
                     break;
             }
          });
-    }
-
-    protected override void OnExit(ExitEventArgs e)
-    {
-        base.OnExit(e);
-        TokenSource.Cancel();
-        ToastNotificationManagerCompat.Uninstall();
-        Save();
-    }
-
-    private void Repositories_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-        Save();
     }
 
     private async void UpdateStatusLoop()
@@ -90,7 +84,8 @@ public partial class App : Application
             for (int i = 0; i < Repositories.Count; i++)
             {
                 var repo = Repositories[i];
-                await UpdateRepositoryStatus(repo, true);
+                await repo.UpdateStatus(fetch: true, notify: true);
+                Win!.VM.UpdateNeeded = Repositories.Any(r => r.UpdateNeeded);
             }
 
             var delta = UPDATE_INTERVAL - (DateTimeOffset.Now - start);
@@ -101,35 +96,27 @@ public partial class App : Application
         }
     }
 
-    public async Task UpdateRepositoryStatus(GitRepository repository, bool fetch)
+    public void AddRepository(string path)
     {
-        var _updateNeeded = repository.UpdateNeeded;
-        await repository.UpdateStatus(fetch);
-        if (Win == null || TokenSource.IsCancellationRequested)
-        {
+        if (Repositories.Any(r => r.Path == path))
             return;
-        }
-        if (!_updateNeeded && repository.UpdateNeeded)
+        var repo = new GitRepository(path);
+        var _ = repo.UpdateStatus(fetch: true, notify: false);
+        int i = 0;
+        for (; i < Repositories.Count; i++)
         {
-            new ToastContentBuilder()
-                .AddArgument("repository", repository.Path)
-                .AddText("Update needed")
-                .AddText(repository.Path)
-                .AddButton(new ToastButton()
-                    .SetContent("Pull")
-                    .AddArgument("action", "pull")
-                )
-                .AddButton(new ToastButton()
-                    .SetContent("Log")
-                    .AddArgument("action", "log")
-                )
-                .AddButton(new ToastButton()
-                    .SetContent("Open")
-                    .AddArgument("action", "open")
-                )
-                .Show();
+            if (StringComparer.CurrentCulture.Compare(Repositories[i].Path, repo.Path) > 0)
+            {
+                break;
+            }
         }
-        Win.VM.UpdateNeeded = Repositories.Any(r => r.UpdateNeeded);
+        Repositories.Insert(i, repo);
+    }
+
+    public void RemoveRepository(GitRepository repository)
+    {
+        Repositories.Remove(repository);
+        repository.Dispose();
     }
 
     private void Load()

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Toolkit.Uwp.Notifications;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Git_Monitor;
 
-public class GitRepository : INotifyPropertyChanged
+public class GitRepository : INotifyPropertyChanged, IDisposable
 {
     public string Path { get; }
 
@@ -43,6 +44,7 @@ public class GitRepository : INotifyPropertyChanged
 
     private Task? UpdateTask;
     private bool InitialLoaded = false;
+    private readonly CancellationTokenSource TokenSource = new();
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -51,13 +53,17 @@ public class GitRepository : INotifyPropertyChanged
         Path = path;
     }
 
-    public async Task UpdateStatus(bool fetch)
+    public async Task UpdateStatus(bool fetch, bool notify)
     {
         if (UpdateTask != null)
         {
             await UpdateTask;
             return;
         }
+
+        if (TokenSource.IsCancellationRequested) return;
+
+        var _updateNeeded = UpdateNeeded;
 
         UpdateTask = Task.Run(async () =>
         {
@@ -108,6 +114,36 @@ public class GitRepository : INotifyPropertyChanged
         await UpdateTask;
         UpdateTask = null;
         ReportStatusChange();
+
+        if (TokenSource.IsCancellationRequested) return;
+
+        if (notify && !_updateNeeded && UpdateNeeded)
+        {
+            new ToastContentBuilder()
+                .AddArgument("repository", Path)
+                .AddText("Update needed")
+                .AddText(Path)
+                .AddButton(new ToastButton()
+                    .SetContent("Pull")
+                    .AddArgument("action", "pull")
+                )
+                .AddButton(new ToastButton()
+                    .SetContent("Log")
+                    .AddArgument("action", "log")
+                )
+                .AddButton(new ToastButton()
+                    .SetContent("Open")
+                    .AddArgument("action", "open")
+                )
+                .Show(toast =>
+                {
+                    toast.Tag = GetHashCode().ToString();
+                });
+        }
+        else if (_updateNeeded && !UpdateNeeded)
+        {
+            RemoveNotification();
+        }
     }
 
     private void ReportStatusChange()
@@ -120,6 +156,65 @@ public class GitRepository : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUpdatingStatus)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsFetching)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusText)));
+    }
+
+    private void RemoveNotification() => ToastNotificationManagerCompat.History.Remove(GetHashCode().ToString());
+
+    public void OpenFolder()
+    {
+        try
+        {
+            using var _ = Process.Start(new ProcessStartInfo()
+            {
+                FileName = Path + System.IO.Path.DirectorySeparatorChar,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+        catch (Exception) { }
+    }
+
+    public async void OpenLog()
+    {
+        try
+        {
+            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:log /path:\"{Path}\"");
+            ps.EnableRaisingEvents = true;
+            await ps.WaitForExitAsync();
+        }
+        catch (Exception) { }
+        await UpdateStatus(fetch: false, notify: false);
+    }
+
+    public async void OpenPull()
+    {
+        try
+        {
+            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:pull /path:\"{Path}\"");
+            ps.EnableRaisingEvents = true;
+            await ps.WaitForExitAsync();
+        }
+        catch (Exception) { }
+        await UpdateStatus(fetch: false, notify: false);
+    }
+
+    public async void OpenPush()
+    {
+        try
+        {
+            using var ps = Process.Start("TortoiseGitProc.exe", $"/command:push /path:\"{Path}\"");
+            ps.EnableRaisingEvents = true;
+            await ps.WaitForExitAsync();
+        }
+        catch (Exception) { }
+        await UpdateStatus(fetch: false, notify: false);
+    }
+
+    public void Dispose()
+    {
+        TokenSource.Cancel();
+        RemoveNotification();
+        GC.SuppressFinalize(this);
     }
 
     private async Task<(string stdErr, string stdOut)> RunCommand(string fileName, string arguments)
