@@ -22,15 +22,15 @@ public class MainViewModel : INotifyPropertyChanged
 
     public ObservableCollection<GitRepository> Repositories => App.Repositories;
 
-    private GitRepository? _Repository;
+    private GitRepository? _SelectedRepository;
     public GitRepository? SelectedRepository {
         get
         {
-            return _Repository;
+            return _SelectedRepository;
         }
         set
         {
-            _Repository = value;
+            _SelectedRepository = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedRepository)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
         }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Text.Json;
@@ -83,7 +84,6 @@ public partial class App : Application
             {
                 var repo = Repositories[i];
                 await repo.UpdateStatus(fetch: true, notify: true);
-                Win!.VM.UpdateNeeded = Repositories.Any(r => r.UpdateNeeded);
             }
 
             var delta = Settings.Default.UpdateInterval - (DateTimeOffset.Now - start);
@@ -94,37 +94,43 @@ public partial class App : Application
         }
     }
 
+    private void RepositoryPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (Win == null) return;
+        Win.VM.UpdateNeeded = Repositories.Any(r => r.UpdateNeeded);
+    }
+
     public void AddRepository(string path)
     {
         if (Repositories.Any(r => r.Path == path))
             return;
-        var repo = new GitRepository(path);
-        var _ = repo.UpdateStatus(fetch: true, notify: false);
+        var repository = new GitRepository(path);
+        repository.PropertyChanged += RepositoryPropertyChanged;
+        var _ = repository.UpdateStatus(fetch: true, notify: false);
         int i = 0;
         for (; i < Repositories.Count; i++)
         {
-            if (StringComparer.CurrentCulture.Compare(Repositories[i].Path, repo.Path) > 0)
+            if (StringComparer.CurrentCulture.Compare(Repositories[i].Path, repository.Path) > 0)
             {
                 break;
             }
         }
-        Repositories.Insert(i, repo);
+        Repositories.Insert(i, repository);
     }
 
     public void RemoveRepository(GitRepository repository)
     {
         Repositories.Remove(repository);
+        repository.PropertyChanged -= RepositoryPropertyChanged;
         repository.Dispose();
     }
 
     private void Load()
     {
         var repoPaths = JsonSerializer.Deserialize<List<string>>(Settings.Default.RepositoryPaths)!;
-        repoPaths.Sort(StringComparer.CurrentCulture);
-
         foreach (var path in repoPaths)
         {
-            Repositories.Add(new GitRepository(path));
+            AddRepository(path);
         }
     }
 
