@@ -128,9 +128,13 @@ public partial class App : Application
     private void Load()
     {
         var repoPaths = JsonSerializer.Deserialize<List<string>>(Settings.Default.RepositoryPaths)!;
+        repoPaths.Sort(StringComparer.CurrentCulture);
+
         foreach (var path in repoPaths)
         {
-            AddRepository(path);
+            var repository = new GitRepository(path);
+            repository.PropertyChanged += RepositoryPropertyChanged;
+            Repositories.Add(repository);
         }
     }
 
