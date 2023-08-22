@@ -1,9 +1,11 @@
 ﻿using H.NotifyIcon;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,6 +27,17 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = VM = vm;
+    }
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+
+        var wp = JsonSerializer.Deserialize<WindowPlacementHelper.WindowPlacement>(Settings.Default.MainWindowPlacement);
+        if (wp.length != 0)
+        {
+            WindowPlacementHelper.SetWindowPlacement(this, wp);
+        }
     }
 
     private void PullClick(object sender, RoutedEventArgs e) => VM.OpenPull();
@@ -68,7 +81,7 @@ public partial class MainWindow : Window
 
     private void ExitClick(object sender, RoutedEventArgs e) => VM.Exit();
 
-    private void Window_Drop(object sender, DragEventArgs e)
+    protected override void OnDrop(DragEventArgs e)
     {
         if (e.Data.GetDataPresent(DataFormats.FileDrop))
         {
@@ -78,12 +91,18 @@ public partial class MainWindow : Window
                 VM.Add(item);
             }
         }
+
+        base.OnDrop(e);
     }
 
-    private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+    protected override void OnClosing(CancelEventArgs e)
     {
+        Settings.Default.MainWindowPlacement = JsonSerializer.Serialize(WindowPlacementHelper.GetWindowPlacement(this));
+        Settings.Default.Save();
+
         e.Cancel = true;
         WindowExtensions.Hide(this);
+        base.OnClosing(e);
     }
 
     private void TrayDoubleClick(object sender, RoutedEventArgs e)

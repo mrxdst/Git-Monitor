@@ -11,8 +11,7 @@
         ui:WindowHelper.UseModernWindowStyle="True"
         Title="Git-Monitor" Height="640" Width="480"
         Icon="{Binding StatusIcon, Mode=OneWay}"
-        Drop="Window_Drop" AllowDrop="True"
-        Closing="Window_Closing">
+        AllowDrop="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
