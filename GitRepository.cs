@@ -35,7 +35,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
             if (Error)
                 return "Error";
             if (!InitialLoaded)
-                return "Unknown";
+                return "";
             if (!UpdateNeeded)
                 return "Up to date";
             return $"{CommitsBehind}↓ / {CommitsAhead}↑";
