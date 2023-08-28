@@ -54,8 +54,7 @@ public partial class App : Application
             {
                 repo = Repositories.FirstOrDefault(r => r.Path == repositoryPath);
             }
-            Win.VM.SelectedRepository = repo;
-
+            
             args.TryGetValue("action", out string action);
             switch (action)
             {
@@ -69,6 +68,7 @@ public partial class App : Application
                     repo?.OpenFolder();
                     break;
                 default:
+                    Win.VM.SelectedRepository = repo;
                     WindowExtensions.Show(Win);
                     break;
             }
