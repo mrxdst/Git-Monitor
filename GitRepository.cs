@@ -18,6 +18,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
 
     public uint CommitsAhead { get; private set; }
     public uint CommitsBehind { get; private set; }
+    public uint UncommittedChanges { get; private set; }
     public string? ErrorText { get; private set; }
 
     public bool Error => !string.IsNullOrEmpty(ErrorText);
@@ -36,9 +37,9 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
                 return "Error";
             if (!InitialLoaded)
                 return "";
-            if (!UpdateNeeded)
-                return "Up to date";
-            return $"{CommitsBehind}↓ / {CommitsAhead}↑";
+            if (UpdateNeeded || UncommittedChanges > 0)
+                return $"{CommitsBehind}↓ / {CommitsAhead}↑ / {UncommittedChanges}*";
+            return "Up to date";
         }
     }
 
@@ -96,9 +97,17 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
                     return;
                 }
 
+                var (statusdErr, statusOut) = await RunCommand("git", "status --no-renames --porcelain=1");
+                if (!string.IsNullOrEmpty(statusdErr))
+                {
+                    ErrorText = statusdErr;
+                    return;
+                }
+
                 ErrorText = null;
                 CommitsBehind = uint.Parse(behindOut, CultureInfo.InvariantCulture); 
                 CommitsAhead = uint.Parse(aheadOut, CultureInfo.InvariantCulture);
+                UncommittedChanges = (uint)statusOut.Split('\n').Where(s => s != "").Count();
             }
             catch (Exception ex)
             {
@@ -150,6 +159,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommitsAhead)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommitsBehind)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UncommittedChanges)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ErrorText)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Error)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UpdateNeeded)));
