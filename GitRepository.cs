@@ -97,7 +97,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
                     return;
                 }
 
-                var (statusdErr, statusOut) = await RunCommand("git", "status --no-renames --porcelain=1");
+                var (statusdErr, statusOut) = await RunCommand("git", "status --untracked-files=all --no-renames --porcelain=1");
                 if (!string.IsNullOrEmpty(statusdErr))
                 {
                     ErrorText = statusdErr;
