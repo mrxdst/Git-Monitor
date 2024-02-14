@@ -62,7 +62,9 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
             return;
         }
 
-        if (TokenSource.IsCancellationRequested) return;
+        var token = CancellationTokenSource.CreateLinkedTokenSource(TokenSource.Token, new CancellationTokenSource(Settings.Default.Timeout).Token).Token;
+
+        if (token.IsCancellationRequested) return;
 
         var _updateNeeded = UpdateNeeded;
 
@@ -75,7 +77,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
             {
                 if (fetch)
                 {
-                    var (fetchErr, _) = await RunCommand("git", "fetch --all --quiet");
+                    var (fetchErr, _) = await RunCommand("git", "fetch --all --quiet", token);
                     if (!string.IsNullOrEmpty(fetchErr))
                     {
                         ErrorText = fetchErr;
@@ -83,21 +85,21 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
                     }
                 }
 
-                var (behindErr, behindOut) = await RunCommand("git", "rev-list --count HEAD..@{u}");
+                var (behindErr, behindOut) = await RunCommand("git", "rev-list --count HEAD..@{u}", token);
                 if (!string.IsNullOrEmpty(behindErr))
                 {
                     ErrorText = behindErr;
                     return;
                 }
 
-                var (aheadErr, aheadOut) = await RunCommand("git", "rev-list --count @{u}..HEAD");
+                var (aheadErr, aheadOut) = await RunCommand("git", "rev-list --count @{u}..HEAD", token);
                 if (!string.IsNullOrEmpty(aheadErr))
                 {
                     ErrorText = aheadErr;
                     return;
                 }
 
-                var (statusdErr, statusOut) = await RunCommand("git", "status --untracked-files=all --no-renames --porcelain=1");
+                var (statusdErr, statusOut) = await RunCommand("git", "status --untracked-files=all --no-renames --porcelain=1", token);
                 if (!string.IsNullOrEmpty(statusdErr))
                 {
                     ErrorText = statusdErr;
@@ -124,7 +126,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
         UpdateTask = null;
         ReportStatusChange();
 
-        if (TokenSource.IsCancellationRequested) return;
+        if (token.IsCancellationRequested) return;
 
         if (notify && !_updateNeeded && UpdateNeeded)
         {
@@ -227,7 +229,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private async Task<(string stdErr, string stdOut)> RunCommand(string fileName, string arguments)
+    private async Task<(string stdErr, string stdOut)> RunCommand(string fileName, string arguments, CancellationToken cancellationToken)
     {
         using var ps = Process.Start(new ProcessStartInfo(fileName, arguments)
         {
@@ -236,9 +238,9 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
             RedirectStandardError = true,
             RedirectStandardOutput = true
         })!;
-        var stdErr = (await ps.StandardError.ReadToEndAsync()).TrimEnd('\r', '\n');
-        var stdOut = (await ps.StandardOutput.ReadToEndAsync()).TrimEnd('\r', '\n');
-        await ps.WaitForExitAsync();
+        var stdErr = (await ps.StandardError.ReadToEndAsync(cancellationToken)).TrimEnd('\r', '\n');
+        var stdOut = (await ps.StandardOutput.ReadToEndAsync(cancellationToken)).TrimEnd('\r', '\n');
+        await ps.WaitForExitAsync(cancellationToken);
         return (stdErr, stdOut);
     }
 }
