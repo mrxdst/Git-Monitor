@@ -23,6 +23,14 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        var _ = new Mutex(true, @"Local\{9D07569F-6BE9-4B90-9F92-B1056DE43C04}", out var createdNew);
+
+        if (!createdNew)
+        {
+            Shutdown();
+            return;
+        }
+
         base.OnStartup(e);
         Load();
         Repositories.CollectionChanged += (sender, e) => Save();
