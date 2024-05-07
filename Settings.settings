@@ -12,7 +12,7 @@
       <Value Profile="(Default)">{}</Value>
     </Setting>
     <Setting Name="Timeout" Type="System.TimeSpan" Scope="User">
-      <Value Profile="(Default)">01:00:00</Value>
+      <Value Profile="(Default)">00:05:00</Value>
     </Setting>
   </Settings>
 </SettingsFile>

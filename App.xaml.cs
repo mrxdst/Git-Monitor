@@ -3,7 +3,6 @@ using Microsoft.Toolkit.Uwp.Notifications;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Data;
 using System.Linq;
@@ -16,9 +15,9 @@ namespace Git_Monitor;
 
 public partial class App : Application
 {
-    public ObservableCollection<GitRepository> Repositories { get; } = new ();
+    public ObservableCollection<GitRepository> Repositories { get; } = new();
 
-    private readonly CancellationTokenSource TokenSource = new ();
+    private readonly CancellationTokenSource TokenSource = new();
 
     private MainWindow? Win;
 
@@ -47,14 +46,15 @@ public partial class App : Application
     private void NotificationActivated(ToastNotificationActivatedEventArgsCompat toastArgs)
     {
         if (Win == null) return;
-        Application.Current.Dispatcher.Invoke(() => {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
             var args = ToastArguments.Parse(toastArgs.Argument);
             GitRepository? repo = null;
             if (args.TryGetValue("repository", out string repositoryPath))
             {
                 repo = Repositories.FirstOrDefault(r => r.Path == repositoryPath);
             }
-            
+
             args.TryGetValue("action", out string action);
             switch (action)
             {
@@ -72,7 +72,7 @@ public partial class App : Application
                     WindowExtensions.Show(Win);
                     break;
             }
-         });
+        });
     }
 
     private async void UpdateStatusLoop()
@@ -143,5 +143,5 @@ public partial class App : Application
         var repoPaths = Repositories.Select(r => r.Path).ToList();
         Settings.Default.RepositoryPaths = JsonSerializer.Serialize(repoPaths);
         Settings.Default.Save();
-    }    
+    }
 }

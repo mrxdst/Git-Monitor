@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 
 namespace Git_Monitor;
@@ -17,13 +11,14 @@ public class MainViewModel : INotifyPropertyChanged
 
     private readonly App App;
 
-    private readonly static BitmapImage IconOK = new (new Uri("pack://application:,,,/Assets/icon_ok.ico"));
-    private readonly static BitmapImage IconBad = new (new Uri("pack://application:,,,/Assets/icon_bad.ico"));
+    private readonly static BitmapImage IconOK = new(new Uri("pack://application:,,,/Assets/icon_ok.ico"));
+    private readonly static BitmapImage IconBad = new(new Uri("pack://application:,,,/Assets/icon_bad.ico"));
 
     public ObservableCollection<GitRepository> Repositories => App.Repositories;
 
     private GitRepository? _SelectedRepository;
-    public GitRepository? SelectedRepository {
+    public GitRepository? SelectedRepository
+    {
         get
         {
             return _SelectedRepository;
@@ -53,7 +48,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public BitmapImage StatusIcon => UpdateNeeded  ? IconBad : IconOK;
+    public BitmapImage StatusIcon => UpdateNeeded ? IconBad : IconOK;
 
     public MainViewModel(App app)
     {

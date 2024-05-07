@@ -1,12 +1,9 @@
 ﻿using Microsoft.Toolkit.Uwp.Notifications;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -107,7 +104,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
                 }
 
                 ErrorText = null;
-                CommitsBehind = uint.Parse(behindOut, CultureInfo.InvariantCulture); 
+                CommitsBehind = uint.Parse(behindOut, CultureInfo.InvariantCulture);
                 CommitsAhead = uint.Parse(aheadOut, CultureInfo.InvariantCulture);
                 UncommittedChanges = (uint)statusOut.Split('\n').Where(s => s != "").Count();
             }
