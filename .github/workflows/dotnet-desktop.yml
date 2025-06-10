@@ -25,7 +25,7 @@ jobs:
       run: dotnet publish -c Release /p:PublishProfile=win-x64
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Git-Monitor
         path: bin/Publish/net7.0-windows/win-x64
