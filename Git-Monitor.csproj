@@ -6,6 +6,7 @@
     <RootNamespace>Git_Monitor</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+	<Version>1.0.1</Version>
     <ApplicationIcon>Assets\icon_ok.ico</ApplicationIcon>
     <NeutralLanguage>en</NeutralLanguage>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

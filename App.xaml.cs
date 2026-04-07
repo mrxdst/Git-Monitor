@@ -32,6 +32,14 @@ public partial class App : Application
         }
 
         base.OnStartup(e);
+
+        // Upgrade settings
+        if (!Settings.Default.DidUpgrade) {
+            Settings.Default.Upgrade();
+            Settings.Default.DidUpgrade = true;
+            Settings.Default.Save();
+        }
+
         Load();
         Repositories.CollectionChanged += (sender, e) => Save();
 

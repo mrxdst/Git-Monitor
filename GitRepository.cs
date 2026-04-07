@@ -74,30 +74,30 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
             {
                 if (fetch)
                 {
-                    var (fetchErr, _) = await RunCommand("git", "fetch --all --quiet", token);
-                    if (!string.IsNullOrEmpty(fetchErr))
+                    var (fetchExitCode, fetchErr, _) = await RunCommand("git", "fetch --all --quiet", token);
+                    if (fetchExitCode != 0)
                     {
                         ErrorText = fetchErr;
                         return;
                     }
                 }
 
-                var (behindErr, behindOut) = await RunCommand("git", "rev-list --count HEAD..@{u}", token);
-                if (!string.IsNullOrEmpty(behindErr))
+                var (behindExitCode, behindErr, behindOut) = await RunCommand("git", "rev-list --count HEAD..@{u}", token);
+                if (behindExitCode != 0)
                 {
                     ErrorText = behindErr;
                     return;
                 }
 
-                var (aheadErr, aheadOut) = await RunCommand("git", "rev-list --count @{u}..HEAD", token);
-                if (!string.IsNullOrEmpty(aheadErr))
+                var (aheadExitCode, aheadErr, aheadOut) = await RunCommand("git", "rev-list --count @{u}..HEAD", token);
+                if (aheadExitCode != 0)
                 {
                     ErrorText = aheadErr;
                     return;
                 }
 
-                var (statusdErr, statusOut) = await RunCommand("git", "status --untracked-files=all --no-renames --porcelain=1", token);
-                if (!string.IsNullOrEmpty(statusdErr))
+                var (statusExitCode, statusdErr, statusOut) = await RunCommand("git", "status --untracked-files=all --no-renames --porcelain=1", token);
+                if (statusExitCode != 0)
                 {
                     ErrorText = statusdErr;
                     return;
@@ -226,7 +226,7 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private async Task<(string stdErr, string stdOut)> RunCommand(string fileName, string arguments, CancellationToken cancellationToken)
+    private async Task<(int exitCode, string stdErr, string stdOut)> RunCommand(string fileName, string arguments, CancellationToken cancellationToken)
     {
         using var ps = Process.Start(new ProcessStartInfo(fileName, arguments)
         {
@@ -238,6 +238,6 @@ public class GitRepository : INotifyPropertyChanged, IDisposable
         var stdErr = (await ps.StandardError.ReadToEndAsync(cancellationToken)).TrimEnd('\r', '\n');
         var stdOut = (await ps.StandardOutput.ReadToEndAsync(cancellationToken)).TrimEnd('\r', '\n');
         await ps.WaitForExitAsync(cancellationToken);
-        return (stdErr, stdOut);
+        return (ps.ExitCode, stdErr, stdOut);
     }
 }
